@@ -1,16 +1,25 @@
 pipeline {
+    environment {
+        registry = "seppevdb/api"
+        registryCredential = 'dockerhub'
+        dockerImage = ''
+    }
     agent any
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t api .'
+                script {
+                    dockerImage = docker.build registry + ":latest"
+                }
             }
         }
         stage('Push to Docker Hub') {
             steps {
-                sh 'docker login -u SeppeVdb -p Azerty123'
-                sh 'docker tag api SeppeVdb/api:latest'
-                sh 'docker push SeppeVdb/api:latest'
+                script {
+                    docker.withRegistry( '', registryCredential ) {
+                        dockerImage.push()
+                    }
+                }
             }
         }
     }
